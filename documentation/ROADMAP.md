@@ -33,7 +33,13 @@ The first enhancement to go through it is [Stop the rendezvous radar draining th
 2. Read the current enhancement page.
 3. Follow the repo workflow in the root [README](../README.md#about-this-fork): branch from `main` as `feature/<name>`, then merge back to `main` with `--no-ff`.
 4. Work on the first phase that isn't ✅. Every phase ends with **exit criteria**. Don't start the next phase until they're met, and record the outcome in the [Log](#log).
-5. Keep the toolchain **outside this repo** (suggested path: `~/Documents/GitHub/virtualagc`). Commit only source changes, harness code (under `tools/`) and docs.
+5. Keep the toolchain **outside this repo**. Workspace layout:
+   ```
+   ~/Documents/GitHub/davidsed/apollo-agc/
+   ├── Apollo-11/     this fork: docs, our patches, harness code
+   └── virtualagc/    Virtual AGC: toolchain plus every Luminary version (shallow clone)
+   ```
+   Commit only source changes, harness code (under `tools/`) and docs to `Apollo-11`.
 
 ---
 
@@ -45,8 +51,8 @@ There is no Homebrew formula and no prebuilt macOS binary ([download page](https
 
 ```bash
 xcode-select --install                       # if needed
-git clone --depth=1 https://github.com/virtualagc/virtualagc.git ~/Documents/GitHub/virtualagc
-cd ~/Documents/GitHub/virtualagc
+# Already cloned (shallow) at ~/Documents/GitHub/davidsed/apollo-agc/virtualagc. To refresh: git -C <that dir> pull
+cd ~/Documents/GitHub/davidsed/apollo-agc/virtualagc
 
 # Command-line only, no wxWidgets needed (target names from the top-level Makefile):
 make MACOSX=yes FORCE_clang=yes yaYUL yaAGC Tools
@@ -73,7 +79,7 @@ make MACOSX=yes FORCE_clang=yes yaYUL yaAGC Tools
 **Step 1: reference build (virtualagc's copy).** The mission Makefile assembles the source and compares it against an octal dump of the original rope:
 
 ```bash
-cd ~/Documents/GitHub/virtualagc
+cd ~/Documents/GitHub/davidsed/apollo-agc/virtualagc
 make -C Luminary099
 # Under the hood (Makefile.inc):
 #   yaYUL --unpound-page MAIN.agc > MAIN.agc.lst          -> MAIN.agc.bin, MAIN.agc.symtab
@@ -86,9 +92,9 @@ Compare against `Luminary099.binsource`, **not** `AP11ROPE.binsource`. Its check
 **Step 2: this fork's copy.**
 
 ```bash
-cd ~/Documents/GitHub/davidsed/Apollo-11/Luminary099
-~/Documents/GitHub/virtualagc/yaYUL/yaYUL --unpound-page MAIN.agc > /tmp/fork-MAIN.lst
-cmp MAIN.agc.bin ~/Documents/GitHub/virtualagc/Luminary099/Luminary099.bin && echo IDENTICAL
+cd ~/Documents/GitHub/davidsed/apollo-agc/Apollo-11/Luminary099
+../../virtualagc/yaYUL/yaYUL --unpound-page MAIN.agc > /tmp/fork-MAIN.lst
+cmp MAIN.agc.bin ../../virtualagc/Luminary099/Luminary099.bin && echo IDENTICAL
 rm -f MAIN.agc.bin MAIN.agc.symtab                       # build outputs; don't commit them
 ```
 
@@ -186,11 +192,7 @@ These are probably just label changes, but **byte-identity isn't proven**.
 
 1. Branch from `main`: `feature/<enhancement>-<option>`, for example `feature/rr-drain-opt1-pcr848`.
    - **Where to start for rr-cpu-drain:** Option 1 is a straight backport. Replace `NORRGMON EQUALS DAPT4S` in `Luminary099/T4RUPT_PROGRAM.agc` with the 8 instructions from `Luminary116/T4RUPT_PROGRAM.agc:1278-1286`. The expected result in Phase 5 is "no 1202s with the RR switch out of LGC", which is what Apollo 12–17 achieved.
-   - **Reference sources:** sparse-clone virtualagc for the later versions, outside the repo:
-     ```bash
-     git clone --depth=1 --filter=blob:none --sparse https://github.com/virtualagc/virtualagc.git ~/Documents/GitHub/virtualagc-lum
-     git -C ~/Documents/GitHub/virtualagc-lum sparse-checkout set Luminary099 Luminary116 LM131R1 Luminary178 Luminary210
-     ```
+   - **Reference sources:** the later versions are in the sibling `virtualagc/` clone: `Luminary116/`, `LM131R1/`, `Luminary178/`, `Luminary210/`.
 2. Mark every change with a `# FORK: <enhancement> <option>` comment so it can be found with `grep -rn "# FORK:"`.
 3. Prefer changing few files, and reuse existing routines and patterns. The enhancement page lists the hook points for each option.
 4. Assemble with yaYUL. The binary **will** now differ from the 1969 rope, which is expected. Use `Tools/ropediff.py` to confirm that only the intended banks changed.
@@ -249,6 +251,7 @@ Newest first. One entry per working session: what was tried, what happened, and 
 
 | Date | Phase | Entry |
 |---|---|---|
+| 2026-10-11 | Setup | Workspace reorganized: this repo moved to `~/Documents/GitHub/davidsed/apollo-agc/Apollo-11`, with a shallow clone of `virtualagc` alongside it. |
 | 2026-10-11 | Research | Compared later Luminary versions. Found PCR 848 (Apollo 12 RR CDU zero hold, Luminary116 T4RUPT `NORRGMON`), PCR 1013 (Apollo 13 P66 pass omission and alarm 1466, LM131R1), Apollo 14 `VACRLEAS` and SERVDURN/DUMLOOPS telemetry, and Apollo 15–17 `CHANBKUP`. Q2 and Q5 answered. Recommendation reordered: PCR 848 backport first. |
 | 2026-10-11 | Planning | Roadmap written. Research found: no Homebrew or prebuilt tools; the fork's source has drifted from virtualagc (Q1); yaAGC models cycle stealing but NASSP doesn't; Virtual AGC alone can't fly a descent, hence a custom headless harness. Nothing built or run yet. |
 
