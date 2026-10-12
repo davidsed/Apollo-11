@@ -1,2 +1,8 @@
 yaYUL.exe
 node_modules
+
+# Fork: yaYUL / harness build outputs (see documentation/ROADMAP.md)
+*.agc.bin
+*.agc.symtab
+*.agc.lst
+build/
