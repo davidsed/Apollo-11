@@ -15,6 +15,7 @@ A guided tour of how the Apollo 11 Lunar Module computer flew the landing, from 
 | [P66: Rate of descent](programs/p66.md) | How the final semi-manual descent works |
 | [P68: Landing confirmation](programs/p68.md) | What the computer does once the LM is on the surface |
 | [P70 / P71: Descent aborts](programs/p70-p71.md) | How the ABORT buttons take over from the landing |
+| [Enhancement: RR CPU drain](enhancements/rr-cpu-drain.md) | Proposal: how descent could avoid the 1202 overload (options, history, test plan) |
 
 ## The descent at a glance
 
@@ -91,7 +92,7 @@ You need these terms for every diagram on these pages.
 
 **Executive and jobs.** The Executive ([EXECUTIVE.agc](../../../Luminary099/EXECUTIVE.agc)) is a tiny priority scheduler. A **job** is a unit of longer-running work with a priority. Higher priority runs first. Jobs are requested with `NOVAC` or `FINDVAC` ([EXECUTIVE.agc:37](../../../Luminary099/EXECUTIVE.agc#L37), [:52](../../../Luminary099/EXECUTIVE.agc#L52)).
 
-**Core sets and VAC areas.** Every job needs a **core set**, a small block of memory that holds its registers and priority. Jobs that use the interpreter (below) also need a **VAC area** for scratch storage. There are only 8 core sets and 5 VAC areas. If they run out, the result is alarm **1202** (no core sets) or **1201** (no VAC areas). See the [1202 event chain](event-chains.md#3-the-1202-alarm-overload-restart-recover).
+**Core sets and VAC areas.** Every job needs a **core set**, a small block of memory that holds its registers and priority. Jobs that use the interpreter (below) also need a **VAC area** for scratch storage. There are only 8 core sets (one is always held by the running job) and 5 VAC areas. If they run out, the result is alarm **1202** (no core sets) or **1201** (no VAC areas). See the [1202 event chain](event-chains.md#3-the-1202-alarm-overload-restart-recover).
 
 **Waitlist and tasks.** The Waitlist ([WAITLIST.agc](../../../Luminary099/WAITLIST.agc)) runs short **tasks** at a set time, driven by a hardware timer interrupt. Tasks must be quick. Anything long, a task hands off by scheduling a job. `WAITLIST`, `TWIDDLE`, `VARDELAY` and `LONGCALL` all schedule tasks. A task ends with `TASKOVER`.
 
