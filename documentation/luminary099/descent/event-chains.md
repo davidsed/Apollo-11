@@ -182,7 +182,9 @@ The two codes are listed in the alarm table at [ASSEMBLY_AND_OPERATION_INFORMATI
 
 **Why it worked:** a routine survives a restart only if it recorded a phase with `PHASCHNG`. Navigation, guidance and the engine state did; the low-priority jobs that had piled up did not. The restart therefore dropped exactly the excess. Some hardware state is deliberately kept across a software restart: *"DURING SOFTWARE RESTART, DO NOT DISTURB ENGINE ON, OFF AND ISS WARNING"* ([FRESH_START_AND_RESTART.agc:428-430](../../../Luminary099/FRESH_START_AND_RESTART.agc#L428-L430)). P66 even re-initializes itself after one: `RESTART?` checks `RODFLAG` ([LUNAR_LANDING_GUIDANCE_EQUATIONS.agc:210](../../../Luminary099/LUNAR_LANDING_GUIDANCE_EQUATIONS.agc#L210)).
 
-**Note:** a comment at [EXECUTIVE.agc:157](../../../Luminary099/EXECUTIVE.agc#L157) says "seven sets of eleven". The erasable layout and the restart code both use **8 core sets of 12 words** ([ERASABLE_ASSIGNMENTS.agc:374-383](../../../Luminary099/ERASABLE_ASSIGNMENTS.agc#L374-L383)), so the comment appears to be out of date.
+**How many core sets?** Memory holds **8 core sets of 12 words** ([ERASABLE_ASSIGNMENTS.agc:374-383](../../../Luminary099/ERASABLE_ASSIGNMENTS.agc#L374-L383)). The search loop checks all 8 (`NO.CORES DEC 7` counts down 7..0, [EXECUTIVE.agc:157-162](../../../Luminary099/EXECUTIVE.agc#L157-L162)), and the restart clears all 8. **Core set 0 always holds the running job**: the Executive swaps a new job into set 0 to run it ([EXECUTIVE.agc:210](../../../Luminary099/EXECUTIVE.agc#L210)). That leaves **7 for waiting jobs**, which is why historical accounts say 7. The comment "SEVEN SETS OF ELEVEN" counts the same way, though its "eleven" doesn't match the 12-word layout. **Inferred** from the swap logic.
+
+**Can this be prevented?** See the enhancement proposal [Stop the rendezvous radar draining the CPU during descent](enhancements/rr-cpu-drain.md).
 
 ---
 
