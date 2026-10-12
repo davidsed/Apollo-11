@@ -89,6 +89,50 @@
 [ML]:Translations/README.ml.md
 Original Apollo 11 guidance computer (AGC) source code for Command Module (Comanche055) and Lunar Module (Luminary099). Digitized by the folks at [Virtual AGC][3] and [MIT Museum][4]. The goal is to be a repo for the original Apollo 11 source code. As such, PRs are welcome for any issues identified between the transcriptions in this repository and the original source scans for [Luminary 099][5] and [Comanche 055][6], as well as any files I may have missed.
 
+## About this fork
+
+This is a personal fork of [chrislgarry/Apollo-11][upstream]. Fork-specific notes live in [documentation/](documentation/).
+
+### Remotes
+
+Remote     | Points to                  | Use
+:--------- | :------------------------- | :--
+`origin`   | `davidsed/Apollo-11`       | Push here
+`upstream` | `chrislgarry/Apollo-11`    | Fetch only (push URL is disabled)
+
+### Branches
+
+Branch      | Purpose
+:---------- | :------
+`master`    | Clean mirror of `upstream/master`. Never commit here.
+`main`      | Integration branch for this fork, and the default branch on GitHub.
+`feature/*` | Work branches. Cut from `main`, merge back into `main`.
+
+### Workflow
+
+```bash
+# Start a feature
+git checkout main && git pull
+git checkout -b feature/my-thing
+# ...work, commit...
+git push -u origin feature/my-thing
+gh pr create --repo davidsed/Apollo-11 --base main   # or merge locally into main
+
+# Sync with upstream
+git checkout master && git pull --ff-only            # tracks upstream/master
+git checkout main && git merge master && git push
+
+# Contribute a change back upstream
+git checkout -b fix/thing master
+git cherry-pick <commits>
+git push -u origin fix/thing
+gh pr create --repo chrislgarry/Apollo-11 --base master
+```
+
+Always pass `--repo` to `gh pr create`. Inside a fork, it can default to the upstream repo.
+
+[upstream]:https://github.com/chrislgarry/Apollo-11
+
 ## Contributing
 
 Please read [CONTRIBUTING.md][7] before opening a pull request.
